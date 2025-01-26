@@ -1,0 +1,66 @@
+{% extends "gym/base.html" %}
+
+{% block title %}
+    Gym Stats Tracker
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Create your workout</h2>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ workout_preset_form.as_p }}
+        {{ exercise_forms.management_form }} <!-- Includes management form fields -->
+
+        <div id="exercises-form-container">
+            {% for exercise_form in exercise_forms %}
+                <div id="exercise-{{ forloop.counter0 }}">
+                    <h3>Exercise {{ forloop.counter }}</h3>  <!-- Number each exercise here -->
+                    {{ exercise_form.id }}
+                    {{ exercise_form.as_p }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <a href="#" id="add-exercise-button" class="btn btn-info add-exercise">Add Exercise</a>
+    </form>
+</div>
+
+<!-- Template for new exercise forms with numbering -->
+<script type="text/html" id="exercise-template">
+    <div id="exercise-__prefix__">
+        <h3>Exercise <span class="exercise-number"></span></h3>
+        {{ exercise_forms.empty_form.as_p|safe }}
+    </div>
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#add-exercise-button').click(function(ev) {
+        ev.preventDefault();
+        
+        // Count current number of forms
+        var count = $('#exercises-form-container').children().length;
+        
+        // Get the HTML template and replace "__prefix__" with the new count
+        var tmplMarkup = $('#exercise-template').html();
+        var newForm = tmplMarkup.replace(/__prefix__/g, count);
+
+        // Append new form to the container
+        $('#exercises-form-container').append(newForm);
+
+        // Update form count in management form
+        $('#id_exercise_forms-TOTAL_FORMS').val(count + 1);
+
+        // Update exercise number for the new form
+        $('#exercises-form-container #exercise-' + count + ' .exercise-number').text(count + 1);
+
+        // Smooth scroll to new form
+        $('html, body').animate({
+            scrollTop: $("#add-exercise-button").position().top - 200
+        }, 800);
+    });
+});
+</script>
+{% endblock %}

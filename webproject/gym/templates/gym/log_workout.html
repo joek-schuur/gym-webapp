@@ -1,0 +1,112 @@
+{% extends "gym/base.html" %}
+
+{% block title %}
+    Log Workout - Gym Stats Tracker
+{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ exercise_form.as_p }}
+        <div id="set-formset">
+            {% for set in set_formset %}
+                <div class="set-form">
+                    <h3>Set {{ set.set_number|default:forloop.counter }}</h3>  <!-- Displaying set_number or fallback to counter -->
+                    <input type="hidden" name="set_formset-{{ forloop.counter0 }}-set_number" value="{{ set.set_number|default:forloop.counter }}"> <!-- Hidden input for set_number -->
+                    <div class="rep-formset"> <!-- Changed from id to class -->
+                        {% for rep in set.rep_formset %}
+                            <div class="rep-form">
+                                {{ rep.weight }}  <!-- Assuming rep has a weight field -->
+                                <button type="button" class="remove-rep">Remove Rep</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="add-rep">Add Rep</button>
+                    <button type="button" class="remove-set">Remove Set</button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Hidden input to track total number of sets -->
+        <input type="hidden" id="id_set-TOTAL_FORMS" name="set_formset-TOTAL_FORMS" value="{{ set_formset.total_forms }}">
+
+        <button type="button" id="add-set">Add Set</button>
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const setFormset = document.querySelector('#set-formset');
+            const totalSets = document.querySelector('#id_set-TOTAL_FORMS'); // Ensure this hidden input exists
+            let setIdx = setFormset.querySelectorAll('.set-form').length; // Initial count of sets
+
+            // Function to create a new rep form
+            function createRepForm(repIdx) {
+                return `
+                    <div class="rep-form">
+                        <input type="text" name="rep_formset-${setIdx}-${repIdx}-weight" placeholder="Weight" required>
+                        <button type="button" class="remove-rep">Remove Rep</button>
+                    </div>
+                `;
+            }
+
+            // Function to add a new set
+            function addSet() {
+                const newSet = document.createElement('div');
+                newSet.classList.add('set-form');
+
+                // Create new HTML for the set
+                newSet.innerHTML = `
+                    <h3>Set ${setIdx + 1}</h3>
+                    <input type="hidden" name="set_formset-${setIdx}-set_number" value="${setIdx + 1}">
+                    <div class="rep-formset">
+                        ${Array.from({length: 8}, (_, i) => createRepForm(i)).join('')}
+                    </div>
+                    <button type="button" class="add-rep">Add Rep</button>
+                    <button type="button" class="remove-set">Remove Set</button>
+                `;
+
+                // Append the new set to the set-formset container
+                setFormset.appendChild(newSet);
+                setIdx++; // Increment the set index
+                totalSets.value = setIdx; // Update the total set count
+            }
+
+            // Event listener for adding a set
+            document.querySelector('#add-set').addEventListener('click', function() {
+                addSet();
+            });
+
+            // Event delegation for removing sets and reps
+            setFormset.addEventListener('click', function(e) {
+                // Remove Set
+                if (e.target.classList.contains('remove-set')) {
+                    const setForm = e.target.closest('.set-form');
+                    if (setForm) {
+                        setForm.remove();
+                        setIdx--; // Decrement set index
+                        totalSets.value = setIdx; // Update the total count
+                    }
+                }
+
+                // Add Rep
+                if (e.target.classList.contains('add-rep')) {
+                    const repFormset = e.target.previousElementSibling; // This would get the rep formset container
+                    const repIdx = repFormset.querySelectorAll('.rep-form').length; // Count current reps
+                    const newRep = createRepForm(repIdx);
+
+                    // Append the new rep to the rep-formset container
+                    repFormset.insertAdjacentHTML('beforeend', newRep);
+                }
+
+                // Remove Rep
+                if (e.target.classList.contains('remove-rep')) {
+                    const repForm = e.target.closest('.rep-form');
+                    if (repForm) {
+                        repForm.remove(); // Remove the rep
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}
