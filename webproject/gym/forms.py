@@ -124,9 +124,9 @@ class WorkoutPresetExerciseForm(forms.ModelForm):
         exclude = ['workout_preset']
     
     EXERCISES = Exercise.objects.all()
-    CHOICES = ((exercise.pk, exercise.name) for exercise in EXERCISES)
+    # CHOICES = ((exercise.pk, exercise.name) for exercise in EXERCISES)
     exercise = forms.ChoiceField(
-        choices=CHOICES,
+        # choices=CHOICES,
         label=("Exercise"),
         widget=forms.Select(attrs=
             {

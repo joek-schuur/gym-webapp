@@ -1,4 +1,18 @@
+## Ignore vscode
 .vscode
 
 ## Ignore settings:
 webproject/webproject/settings.py
+
+## Ignore venv
+venv
+
+## Ignore cache
+webproject/gym/__pycache__
+webproject/webproject/__pycache__
+
+## Ignore db
+webproject/db.sqlite3
+
+## Ignore migrations
+webproject/gym/migrations
